@@ -1,22 +1,29 @@
 # ConferenceTracker
 
-Scrapes 13 AI-in-libraries conference websites monthly for 2026 dates and proposal deadlines. No API keys. Pure Node.js with native fetch.
+Scrapes 14 AI-in-libraries conference websites monthly for 2026 dates. Outputs compact `raw-data.json`. Claude reads it, analyzes, and builds `index.html`. Vercel serves it.
+
+## Workflow
+1. GitHub Action runs (1st of month or manual) → scrapes → commits `raw-data.json`
+2. Tell Claude: "analyze and build" → reads `raw-data.json`, writes `index.html`
+3. `git push` → Vercel auto-deploys → live at https://conference-tracker-seven.vercel.app
 
 ## Files
-- `scrape.js` — main script: fetches all sites, extracts 2026 dates via regex, outputs HTML
-- `conference-dates.html` — generated output, open in any browser
-- `.github/workflows/monthly.yml` — runs on the 1st of each month + manual trigger
+- `scrape.js` — fetches 14 sites, extracts 2026 dates, filters noise, saves `raw-data.json`
+- `raw-data.json` — compact scraped data (~1.5KB): real dates only, 120-char snippets, noise pre-filtered
+- `index.html` — Claude-built output, human-reviewed, pushed manually
+- `.github/workflows/monthly.yml` — scrapes on the 1st of each month + workflow_dispatch
 
 ## Run locally
 ```bash
-node scrape.js
-# opens conference-dates.html
+node scrape.js       # → raw-data.json
+# then tell Claude to analyze and build index.html
+git add index.html && git push
 ```
 
-## Sites tracked
+## Sites tracked (14)
 1. Internet Librarian Speakers (infotoday.com)
 2. Charleston Conference CFP
-3. ai4Libraries 2025 Schedule
+3. ai4Libraries Schedule
 4. GAIL Schedule (SHSU)
 5. Library 2.0 Conferences
 6. Library 2.0 Perspectives on AI
@@ -27,15 +34,17 @@ node scrape.js
 11. Fantastic Futures 2026
 12. ALIA National 2026
 13. CARL 2026 Schedule
+14. Brick & Click Libraries
 
-## How it works
-- Fetches raw HTML, strips tags, runs two regex patterns to find dates with full 4-digit years
-- Filters to 2026 only
-- Classifies each date as **Deadline** (proposal/CFP context), **Event** (conference/schedule context), or **Date**
-- Outputs a filterable single-file HTML report
+## Scraper design
+- Native `fetch`, no npm dependencies, Node 18+
+- Noise filter drops LibGuide "Last Updated", post dates, article dates before saving
+- JSON uses short keys (n/u/d/s) and single-line format to minimize Claude read tokens
+- Empty sites stored as flat name list, not full objects
 
-## GitHub Actions
-Workflow runs automatically on the 1st of each month and commits updated `conference-dates.html` back to the repo. Can also be triggered manually from the Actions tab.
-
-## Owner
-Vladimir — built for Yulia's library conference research.
+## Token optimization
+raw-data.json is kept minimal so Claude's analysis pass is cheap:
+- Short keys: `n` (name), `u` (url), `d` (date), `s` (snippet), `at` (date scraped)
+- Snippets capped at 120 chars
+- Noise pre-filtered in scraper (not passed to Claude)
+- No-data sites as flat array of names only
