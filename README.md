@@ -1,80 +1,89 @@
 # ConferenceTracker
 
-A lightweight monthly scraper that checks 13 AI-in-libraries conference websites for **2026 dates** and **proposal deadlines** — no API keys, no dependencies beyond Node.js 18+.
+Monthly scraper for AI-in-libraries conference websites — tracks 2026 dates and proposal deadlines. No API keys, no npm dependencies.
 
-Built for a librarian preparing to submit conference presentations.
+**Live:** https://conference-tracker-seven.vercel.app
 
 ---
 
 ## How it works
 
-1. Fetches raw HTML from 13 conference sites in parallel
-2. Strips tags, runs regex to extract dates that include a full 4-digit year
-3. Filters to **2026 only**
-4. Classifies each date by context:
-   - **Deadline** — near keywords like "proposal", "submit", "CFP", "abstract"
-   - **Event** — near keywords like "conference", "schedule", "registration"
-   - **Date** — everything else
-5. Outputs a single self-contained `conference-dates.html` with filter buttons
+```
+GitHub Action (1st of month or manual)
+  → scrapes 14 sites → raw-data.json
+  → Claude reads + analyzes → index.html
+  → git push → Vercel deploys
+```
+
+The scraper does the heavy lifting: extracts only real 2026 dates, pre-filters noise (LibGuide "Last Updated" timestamps, post dates, article dates), and saves a compact ~1.5KB JSON. Claude then reads it, interprets context, and builds a clean HTML report.
 
 ---
 
-## Sites tracked
+## Sites tracked (14)
 
-| # | Conference | URL |
-|---|-----------|-----|
-| 1 | Internet Librarian Speakers | speakers.infotoday.com |
-| 2 | Charleston Conference CFP | charleston-hub.com |
-| 3 | ai4Libraries 2025 Schedule | ai4libraries.org |
-| 4 | GAIL Schedule (SHSU) | shsulibraryguides.org |
-| 5 | Library 2.0 Conferences | library20.com |
-| 6 | Library 2.0 Perspectives on AI | library20.com |
-| 7 | Amigos: AI-Enhanced Library | amigos.org |
-| 8 | SAIL — Libraries and AI | cdlc.org |
-| 9 | AI & Academic Libraries | eventbrite.com |
-| 10 | Lehigh AI Summit | lts.lehigh.edu |
-| 11 | Fantastic Futures 2026 | ai4lam.org |
-| 12 | ALIA National 2026 | alianational.alia.org.au |
-| 13 | CARL 2026 Schedule | carl-acrl.wildapricot.org |
+| Conference | URL |
+|-----------|-----|
+| Internet Librarian Speakers | speakers.infotoday.com |
+| Charleston Conference CFP | charleston-hub.com |
+| ai4Libraries Schedule | ai4libraries.org |
+| GAIL Schedule (SHSU) | shsulibraryguides.org |
+| Library 2.0 Conferences | library20.com |
+| Library 2.0 Perspectives on AI | library20.com |
+| Amigos: AI-Enhanced Library | amigos.org |
+| SAIL — Libraries and AI | cdlc.org |
+| AI & Academic Libraries | eventbrite.com |
+| Lehigh AI Summit | lts.lehigh.edu |
+| Fantastic Futures 2026 | ai4lam.org |
+| ALIA National 2026 | alianational.alia.org.au |
+| CARL 2026 Schedule | carl-acrl.wildapricot.org |
+| Brick & Click Libraries | nwmissouri.edu |
 
 ---
 
 ## Usage
 
-**Run locally:**
+**Run scraper locally:**
 ```bash
 node scrape.js
-# → saves conference-dates.html, open in any browser
+# → saves raw-data.json
 ```
 
-**Requirements:** Node.js 18+ (uses native `fetch`, no `npm install` needed)
+**Then tell Claude:** "analyze and build" → Claude reads `raw-data.json`, writes `index.html`
+
+```bash
+git add index.html && git push
+# → Vercel auto-deploys
+```
+
+**Requirements:** Node.js 18+ (native `fetch`, no `npm install` needed)
 
 ---
 
 ## GitHub Actions
 
-The workflow in `.github/workflows/monthly.yml`:
-- Runs automatically on the **1st of each month** at 9am UTC
-- Can be triggered manually via the **Actions tab → Run workflow**
-- Commits updated `conference-dates.html` back to this repo after each run
+`.github/workflows/monthly.yml`:
+- Runs on the **1st of each month** at 9am UTC
+- Manual trigger via **Actions → Run workflow**
+- Commits updated `raw-data.json` back to repo
 
 ---
 
 ## Output
 
-A single HTML file with:
-- All 2026 dates found across all sites
-- Context snippet showing surrounding text for each date
-- Filter buttons: All / Deadlines / Events / Errors
-- Error reporting for any sites that failed to load
+Claude-built HTML page with:
+- Upcoming deadlines sorted by urgency (red = <2 weeks, orange = <1 month)
+- Conference dates with full timelines where available
+- Noise filtered out with explanations
+- Sites with no 2026 dates listed for manual review
 
 ---
 
 ## Files
 
 ```
-scrape.js                        ← main script
-conference-dates.html            ← generated output (updated monthly)
-.github/workflows/monthly.yml   ← GitHub Actions schedule
-CLAUDE.md                        ← project notes for Claude Code
+scrape.js                       ← scraper, outputs raw-data.json
+raw-data.json                   ← compact scraped data (~1.5KB)
+index.html                      ← Claude-built output, pushed manually
+.github/workflows/monthly.yml  ← GitHub Actions schedule
+CLAUDE.md                       ← project notes for Claude Code
 ```
