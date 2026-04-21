@@ -185,8 +185,8 @@ async function main() {
   const errors = results.filter(r => r.error).length;
   console.log(`Done — ${found} with dates, ${errors} errors`);
   const checkedAt = new Date().toLocaleString('en-US', { year:'numeric', month:'long', day:'numeric', hour:'2-digit', minute:'2-digit' });
-  writeFileSync('conference-dates.html', buildHtml(results, checkedAt));
-  console.log('Saved: conference-dates.html');
+  writeFileSync('index.html', buildHtml(results, checkedAt));
+  console.log('Saved: index.html');
 }
 
 main().catch(console.error);
