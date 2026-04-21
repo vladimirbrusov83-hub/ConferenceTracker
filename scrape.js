@@ -20,11 +20,13 @@ const SITES = [
 
 const M = 'January|February|March|April|May|June|July|August|September|October|November|December|Jan|Feb|Mar|Apr|Jun|Jul|Aug|Sep|Oct|Nov|Dec';
 const ORD = '(?:st|nd|rd|th)?';
-
 const DATE_RES = [
   new RegExp(`\\b((?:${M})\\.?\\s+\\d{1,2}${ORD}(?:\\s*[–\\-]\\s*\\d{1,2}${ORD})?\\s*,?\\s*20\\d{2})\\b`, 'gi'),
   new RegExp(`\\b(\\d{1,2}${ORD}\\s+(?:${M})\\.?\\s*,?\\s*20\\d{2})\\b`, 'gi'),
 ];
+
+// Patterns that indicate the date is page metadata, not a real event
+const NOISE_RE = /last updated|posted by|login to|copyright|\(c\)|print page|url:/i;
 
 function stripHtml(html) {
   return html
@@ -36,6 +38,19 @@ function stripHtml(html) {
     .replace(/\s{2,}/g, ' ').trim();
 }
 
+// Extract the single most relevant sentence containing the date
+function bestSnippet(text, matchIndex, matchLen) {
+  const start = Math.max(0, matchIndex - 120);
+  const end = Math.min(text.length, matchIndex + matchLen + 120);
+  const chunk = text.slice(start, end);
+  // Find the sentence boundary closest to the date
+  const sentences = chunk.split(/(?<=[.!?])\s+/);
+  for (const s of sentences) {
+    if (s.match(/20\d{2}/)) return s.trim().slice(0, 120);
+  }
+  return chunk.trim().slice(0, 120);
+}
+
 function extractDates(text) {
   const seen = new Set();
   const results = [];
@@ -45,12 +60,12 @@ function extractDates(text) {
       const key = m[1].toLowerCase().replace(/\s+/g, ' ');
       if (seen.has(key)) continue;
       seen.add(key);
-      const s = Math.max(0, m.index - 200);
-      const e = Math.min(text.length, m.index + m[1].length + 200);
-      results.push({ date: m[1].trim(), context: text.slice(s, e).trim() });
+      const snippet = bestSnippet(text, m.index, m[1].length);
+      if (NOISE_RE.test(snippet)) continue; // drop page metadata
+      results.push({ d: m[1].trim(), s: snippet });
     }
   }
-  return results.filter(d => d.date.includes('2026'));
+  return results.filter(r => r.d.includes('2026'));
 }
 
 async function fetchSite(site) {
@@ -59,31 +74,34 @@ async function fetchSite(site) {
   try {
     const res = await fetch(site.url, {
       signal: ctrl.signal,
-      headers: { 'User-Agent': 'Mozilla/5.0 (compatible; ConferenceTracker/1.0; +https://github.com)' }
+      headers: { 'User-Agent': 'Mozilla/5.0 (compatible; ConferenceTracker/1.0)' }
     });
     clearTimeout(t);
-    if (!res.ok) return { ...site, error: `HTTP ${res.status}`, dates: [] };
-    const html = await res.text();
-    const text = stripHtml(html);
+    if (!res.ok) return { n: site.name, u: site.url, e: `HTTP ${res.status}` };
+    const text = stripHtml(await res.text());
     const dates = extractDates(text);
-    return { ...site, dates, error: null };
+    if (!dates.length) return { n: site.name, u: site.url };
+    return { n: site.name, u: site.url, dates };
   } catch (e) {
     clearTimeout(t);
-    return { ...site, error: e.name === 'AbortError' ? 'Timeout' : e.message, dates: [] };
+    return { n: site.name, u: site.url, e: e.name === 'AbortError' ? 'Timeout' : e.message };
   }
 }
 
 async function main() {
   console.log(`Scanning ${SITES.length} sites...`);
   const results = await Promise.all(SITES.map(fetchSite));
-  const found  = results.filter(r => r.dates?.length).length;
-  const errors = results.filter(r => r.error).length;
-  console.log(`Done — ${found} with dates, ${errors} errors`);
+  const withDates = results.filter(r => r.dates?.length);
+  const errors    = results.filter(r => r.e);
+  const empty     = results.filter(r => !r.dates?.length && !r.e).map(r => r.n);
+  console.log(`Done — ${withDates.length} with dates, ${errors.length} errors`);
   const output = {
-    scrapedAt: new Date().toISOString(),
-    sites: results
+    at: new Date().toISOString().slice(0, 10),
+    dates: withDates,
+    errors: errors.map(r => ({ n: r.n, e: r.e })),
+    empty
   };
-  writeFileSync('raw-data.json', JSON.stringify(output, null, 2));
+  writeFileSync('raw-data.json', JSON.stringify(output));
   console.log('Saved: raw-data.json');
 }
 
