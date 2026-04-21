@@ -1,0 +1,25 @@
+name: Monthly Conference Check
+
+on:
+  schedule:
+    - cron: '0 9 1 * *'   # 1st of each month at 9am UTC
+  workflow_dispatch:        # manual "Run workflow" button in GitHub UI
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - run: node scrape.js
+      - name: Commit results
+        run: |
+          git config user.name "Conference Tracker"
+          git config user.email "actions@github.com"
+          git add conference-dates.html
+          git diff --cached --quiet || git commit -m \"Update conference dates \$(date +'%Y-%m-%d')\"
+          git push
