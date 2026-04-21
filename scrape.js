@@ -15,6 +15,7 @@ const SITES = [
   { name: 'Fantastic Futures 2026',           url: 'https://ai4lam.org/fantastic-futures/fantastic-futures-2026-trust-in-the-loop/' },
   { name: 'ALIA National 2026',               url: 'https://alianational.alia.org.au/program/' },
   { name: 'CARL 2026 Schedule',               url: 'https://carl-acrl.wildapricot.org/carl-2026-schedule' },
+  { name: 'Brick & Click Libraries',          url: 'https://www.nwmissouri.edu/library/brickandclick/index.htm' },
 ];
 
 const M = 'January|February|March|April|May|June|July|August|September|October|November|December|Jan|Feb|Mar|Apr|Jun|Jul|Aug|Sep|Oct|Nov|Dec';
