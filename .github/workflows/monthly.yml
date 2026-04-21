@@ -20,6 +20,6 @@ jobs:
         run: |
           git config user.name "Conference Tracker"
           git config user.email "actions@github.com"
-          git add conference-dates.html
-          git diff --cached --quiet || git commit -m "Update conference dates"
+          git add raw-data.json
+          git diff --cached --quiet || git commit -m "Update raw data"
           git push
