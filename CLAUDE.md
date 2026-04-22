@@ -10,7 +10,7 @@ Scrapes 14 AI-in-libraries conference websites monthly for 2026 dates. Outputs c
 ## Files
 - `scrape.js` — fetches 14 sites, extracts 2026 dates, filters noise, saves `raw-data.json`
 - `raw-data.json` — compact scraped data (~1.5KB): real dates only, 120-char snippets, noise pre-filtered
-- `index.html` — Claude-built output, human-reviewed, pushed manually
+- `index.html` — Claude-built output, human-reviewed, pushed manually. Academic bulletin aesthetic: Playfair Display + Crimson Pro + IBM Plex Mono, parchment palette, Roman numeral sections, sharp left-border cards.
 - `.github/workflows/monthly.yml` — scrapes on the 1st of each month + workflow_dispatch
 
 ## Run locally
@@ -41,6 +41,15 @@ git add index.html && git push
 - Noise filter drops LibGuide "Last Updated", post dates, article dates before saving
 - JSON uses short keys (n/u/d/s) and single-line format to minimize Claude read tokens
 - Empty sites stored as flat name list, not full objects
+
+## Design system (index.html)
+- Fonts: Playfair Display (headings/conf names), Crimson Pro (body), IBM Plex Mono (dates/labels)
+- Palette: parchment `#F3EDE1` bg, navy `#1B2A4A`, gold `#9A6E1A`, crimson `#7C1A28`, amber `#8E4B15`
+- Cards: sharp left accent border (4px, color-coded by urgency), no border-radius
+- Sections: Roman numerals (I–IV) in italic gold
+- Urgency: crimson border = ≤14 days, amber = ≤30 days, navy = future, dashed = noise/filtered
+- Header: ornamental ✦ rule, kicker line, `◆` bottom divider, boxed meta cells
+- Animation: staggered `riseIn` fadeUp per card
 
 ## Token optimization
 raw-data.json is kept minimal so Claude's analysis pass is cheap:
