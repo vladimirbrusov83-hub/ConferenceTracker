@@ -4,189 +4,608 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>AI in Libraries — Conference Tracker</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Crimson+Pro:ital,wght@0,300;0,400;0,600;1,400&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg: #ffffff; --card: #f8fafc; --bd: #e2e8f0;
-    --tx: #1e293b; --mu: #64748b; --ac: #4f46e5;
-    --red: #dc2626; --orange: #ea580c; --green: #16a34a;
-    --blue: #2563eb; --yellow: #ca8a04;
+    --parchment: #F3EDE1;
+    --card:      #FAF7F0;
+    --card-bd:   #E2D9C7;
+    --navy:      #1B2A4A;
+    --gold:      #9A6E1A;
+    --crimson:   #7C1A28;
+    --amber:     #8E4B15;
+    --sage:      #2A5218;
+    --ink:       #1C1917;
+    --muted:     #68624F;
+    --faint:     #C9C0AE;
+    --faint2:    #E8E1D4;
   }
+
   * { margin: 0; padding: 0; box-sizing: border-box; }
-  body { font-family: system-ui, sans-serif; background: var(--bg); color: var(--tx); line-height: 1.6; padding: 2rem 1rem; max-width: 860px; margin: 0 auto; }
 
-  header { margin-bottom: 2rem; }
-  h1 { color: var(--ac); font-size: 1.6rem; margin-bottom: .2rem; }
-  .meta { color: var(--mu); font-size: .85rem; }
-
-  .section-label {
-    font-size: .7rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase;
-    color: var(--mu); margin: 2rem 0 .75rem; padding-bottom: .4rem;
-    border-bottom: 1px solid var(--bd);
+  body {
+    font-family: 'Crimson Pro', Georgia, serif;
+    background: var(--parchment);
+    color: var(--ink);
+    line-height: 1.6;
+    min-height: 100vh;
+    position: relative;
   }
+
+  /* Subtle paper grain */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    background-image:
+      repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 23px,
+        rgba(110, 85, 40, 0.018) 23px,
+        rgba(110, 85, 40, 0.018) 24px
+      );
+  }
+
+  .page {
+    position: relative;
+    z-index: 1;
+    max-width: 880px;
+    margin: 0 auto;
+    padding: 3.5rem 2rem 6rem;
+  }
+
+  /* ─────────────── HEADER ─────────────── */
+
+  header {
+    text-align: center;
+    margin-bottom: 3.5rem;
+    animation: riseIn .7s ease both;
+  }
+
+  .header-top-rule {
+    display: flex;
+    align-items: center;
+    gap: 1.1rem;
+    margin-bottom: 1.6rem;
+  }
+  .header-top-rule::before,
+  .header-top-rule::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--navy) 40%, var(--navy) 60%, transparent);
+    opacity: .35;
+  }
+  .header-orn {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: .65rem;
+    letter-spacing: .35em;
+    color: var(--gold);
+    padding: 0 .2rem;
+  }
+
+  .header-kicker {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: .62rem;
+    font-weight: 600;
+    letter-spacing: .2em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: .8rem;
+  }
+
+  h1 {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: clamp(2.2rem, 5vw, 3.4rem);
+    font-weight: 700;
+    color: var(--navy);
+    line-height: 1.1;
+    margin-bottom: .35rem;
+    letter-spacing: -.01em;
+  }
+
+  h1 span {
+    font-style: italic;
+    font-weight: 400;
+    color: var(--crimson);
+  }
+
+  .header-sub {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-style: italic;
+    font-size: 1.1rem;
+    color: var(--muted);
+    margin-bottom: 1.4rem;
+    letter-spacing: .01em;
+  }
+
+  .header-meta {
+    display: inline-flex;
+    align-items: center;
+    gap: 0;
+    border: 1px solid var(--card-bd);
+    background: var(--card);
+  }
+
+  .meta-cell {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: .65rem;
+    color: var(--muted);
+    letter-spacing: .04em;
+    padding: .4rem .9rem;
+  }
+  .meta-cell + .meta-cell {
+    border-left: 1px solid var(--card-bd);
+  }
+
+  .header-bot-rule {
+    margin-top: 1.8rem;
+    position: relative;
+    border: none;
+    border-top: 1px solid var(--faint);
+  }
+  .header-bot-rule::after {
+    content: '◆';
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    background: var(--parchment);
+    padding: 0 .6rem;
+    color: var(--gold);
+    font-size: .55rem;
+  }
+
+  /* ─────────────── SECTION ─────────────── */
+
+  .section-header {
+    display: flex;
+    align-items: baseline;
+    gap: 1rem;
+    margin: 3.2rem 0 1.4rem;
+  }
+
+  .sec-num {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-style: italic;
+    font-size: 1.05rem;
+    color: var(--gold);
+    min-width: 1.6rem;
+    flex-shrink: 0;
+  }
+
+  .sec-title {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 1rem;
+    font-weight: 700;
+    letter-spacing: .03em;
+    color: var(--navy);
+  }
+
+  .sec-rule {
+    flex: 1;
+    height: 1px;
+    background: var(--faint);
+    margin-left: .4rem;
+  }
+
+  /* ─────────────── CARDS ─────────────── */
 
   .event {
-    background: var(--card); border: 1px solid var(--bd); border-radius: 10px;
-    padding: 1.1rem 1.25rem; margin-bottom: .75rem;
-    display: grid; grid-template-columns: 110px 1fr; gap: .5rem 1rem; align-items: start;
+    background: var(--card);
+    border: 1px solid var(--card-bd);
+    border-left: 4px solid var(--faint);
+    margin-bottom: .9rem;
+    display: grid;
+    grid-template-columns: 130px 1fr;
+    transition: box-shadow .18s ease, border-left-color .18s ease;
+    animation: riseIn .5s ease both;
   }
-  .event.urgent { border-color: #dc2626; background: #fef2f2; }
-  .event.soon   { border-color: #ea580c; background: #fff7ed; }
-  .event.future { border-color: var(--bd); }
-  .event.noise  { opacity: .4; border-style: dashed; }
 
-  .date-col { text-align: right; padding-top: .1rem; }
-  .date-main { font-weight: 700; font-size: .95rem; color: var(--tx); line-height: 1.3; }
-  .date-days { font-size: .75rem; margin-top: .15rem; }
-  .days-urgent { color: var(--red); font-weight: 700; }
-  .days-soon   { color: var(--orange); font-weight: 600; }
-  .days-future { color: var(--mu); }
-  .days-past   { color: var(--mu); }
-
-  .conf-name { font-weight: 600; font-size: 1rem; color: var(--tx); }
-  .conf-name a { color: var(--ac); text-decoration: none; }
-  .conf-name a:hover { text-decoration: underline; }
-  .event-label { font-size: .82rem; color: var(--mu); margin-top: .15rem; }
-
-  .badge {
-    display: inline-block; font-size: .68rem; font-weight: 700; padding: .1rem .5rem;
-    border-radius: 99px; margin-right: .3rem; vertical-align: middle;
+  .event:hover {
+    box-shadow: 0 3px 18px rgba(27, 42, 74, .09);
   }
-  .b-deadline   { background: #fef3c7; color: #92400e; }
-  .b-conference { background: #dbeafe; color: #1e40af; }
-  .b-recording  { background: #dcfce7; color: #166534; }
-  .b-noise      { background: #f1f5f9; color: #64748b; border: 1px solid var(--bd); }
 
-  .timeline { margin-top: .7rem; border-left: 2px solid var(--bd); padding-left: .85rem; display: flex; flex-direction: column; gap: .3rem; }
-  .tl-item { font-size: .82rem; display: flex; gap: .6rem; }
-  .tl-date { white-space: nowrap; min-width: 60px; }
-  .tl-item.tl-past .tl-date { text-decoration: line-through; opacity: .45; }
-  .tl-item.tl-past .tl-desc { opacity: .45; }
-  .tl-item.tl-upcoming .tl-date { color: var(--tx); font-weight: 500; }
-  .tl-item.tl-upcoming .tl-desc { color: var(--mu); }
-  .tl-item.tl-main { background: #eff6ff; border-radius: 4px; padding: .25rem .5rem; margin-left: -.5rem; }
-  .tl-item.tl-main .tl-date { color: #1d4ed8; font-weight: 700; }
-  .tl-item.tl-main .tl-desc { color: #1e40af; }
+  .event.urgent { border-left-color: var(--crimson); }
+  .event.soon   { border-left-color: var(--amber); }
+  .event.future { border-left-color: var(--navy); }
+  .event.noise  {
+    opacity: .45;
+    border-left-style: dashed;
+    border-left-color: var(--faint);
+  }
 
-  .no-data-grid { display: flex; flex-wrap: wrap; gap: .4rem; margin-top: .25rem; }
-  .no-data-tag { background: var(--card); border: 1px solid var(--bd); border-radius: 6px; padding: .25rem .65rem; font-size: .8rem; }
-  .no-data-tag a { color: #475569; text-decoration: none; }
-  .no-data-tag a:hover { color: var(--ac); }
+  .date-col {
+    padding: 1.2rem 1rem 1.2rem 1.1rem;
+    border-right: 1px solid var(--card-bd);
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    justify-content: flex-start;
+    background: rgba(0,0,0,0.012);
+  }
 
-  @media (max-width: 500px) {
+  .date-main {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: .82rem;
+    font-weight: 600;
+    color: var(--navy);
+    text-align: right;
+    line-height: 1.45;
+  }
+
+  .date-days {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: .64rem;
+    text-align: right;
+    margin-top: .35rem;
+    letter-spacing: .02em;
+  }
+  .days-urgent { color: var(--crimson); font-weight: 600; }
+  .days-soon   { color: var(--amber); }
+  .days-future { color: var(--muted); }
+  .days-past   { color: var(--faint); }
+
+  .info-col {
+    padding: 1.15rem 1.35rem;
+  }
+
+  .ev-type {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: .6rem;
+    font-weight: 600;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    margin-bottom: .3rem;
+    color: var(--muted);
+  }
+  .ev-type.t-deadline   { color: var(--crimson); }
+  .ev-type.t-conference { color: var(--navy); }
+  .ev-type.t-recording  { color: var(--sage); }
+  .ev-type.t-noise      { color: var(--faint); }
+
+  .conf-name {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 1.08rem;
+    font-weight: 600;
+    color: var(--navy);
+    line-height: 1.3;
+    margin-bottom: .25rem;
+  }
+
+  .conf-name a {
+    color: inherit;
+    text-decoration: none;
+    border-bottom: 1px solid var(--faint2);
+    transition: border-color .15s;
+  }
+  .conf-name a:hover { border-bottom-color: var(--navy); }
+
+  .ev-desc {
+    font-size: .97rem;
+    color: var(--muted);
+    line-height: 1.5;
+  }
+
+  /* ─────────────── TIMELINE ─────────────── */
+
+  .timeline {
+    margin-top: .9rem;
+    padding-top: .8rem;
+    border-top: 1px solid var(--faint2);
+  }
+
+  .tl-item {
+    display: grid;
+    grid-template-columns: 68px 1fr;
+    gap: .6rem;
+    font-family: 'Crimson Pro', Georgia, serif;
+    font-size: .92rem;
+    padding: .2rem 0 .2rem 1rem;
+    position: relative;
+  }
+
+  .tl-item::before {
+    content: '';
+    position: absolute;
+    left: .1rem;
+    top: .55rem;
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: var(--faint);
+  }
+
+  .tl-item.tl-past {
+    opacity: .38;
+  }
+  .tl-item.tl-past .tl-date { text-decoration: line-through; }
+
+  .tl-item.tl-upcoming::before { background: var(--navy); opacity: .35; }
+
+  .tl-item.tl-main {
+    background: rgba(27,42,74,.05);
+    padding: .35rem .6rem .35rem 1rem;
+    margin-left: -.3rem;
+  }
+  .tl-item.tl-main::before {
+    background: var(--navy);
+    opacity: 1;
+    left: .4rem;
+  }
+  .tl-item.tl-main .tl-date { color: var(--navy); font-weight: 600; }
+  .tl-item.tl-main .tl-desc { color: var(--navy); }
+
+  .tl-date { color: var(--muted); }
+  .tl-desc  { color: var(--muted); }
+
+  /* ─────────────── NO-DATA GRID ─────────────── */
+
+  .no-data-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .45rem;
+    margin-top: .2rem;
+  }
+
+  .no-data-tag {
+    border: 1px solid var(--card-bd);
+    background: var(--card);
+    padding: .3rem .85rem;
+    font-family: 'Crimson Pro', Georgia, serif;
+    font-size: .95rem;
+  }
+
+  .no-data-tag a {
+    color: var(--muted);
+    text-decoration: none;
+    transition: color .15s;
+  }
+  .no-data-tag a:hover { color: var(--navy); }
+
+  /* ─────────────── FOOTER ─────────────── */
+
+  footer {
+    margin-top: 4.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--faint2);
+    text-align: center;
+  }
+
+  .footer-text {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: .6rem;
+    color: var(--faint);
+    letter-spacing: .08em;
+    text-transform: uppercase;
+  }
+
+  /* ─────────────── ANIMATION ─────────────── */
+
+  @keyframes riseIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ─────────────── RESPONSIVE ─────────────── */
+
+  @media (max-width: 560px) {
+    .page { padding: 2rem 1rem 4rem; }
+    h1 { font-size: 2rem; }
     .event { grid-template-columns: 1fr; }
-    .date-col { text-align: left; display: flex; gap: .6rem; align-items: baseline; }
+    .date-col {
+      border-right: none;
+      border-bottom: 1px solid var(--card-bd);
+      flex-direction: row;
+      justify-content: space-between;
+      align-items: center;
+      padding: .7rem 1rem;
+    }
+    .date-main { font-size: .8rem; }
+    .header-meta { flex-direction: column; gap: .3rem; }
+    .meta-cell + .meta-cell { border-left: none; border-top: 1px solid var(--card-bd); }
   }
 </style>
 </head>
 <body>
+<div class="page">
 
-<header>
-  <h1>AI in Libraries — Conference Tracker</h1>
-  <p class="meta">Analyzed April 21, 2026 &nbsp;·&nbsp; 14 sites monitored</p>
-</header>
+  <!-- ══════ HEADER ══════ -->
+  <header>
+    <div class="header-top-rule">
+      <span class="header-orn">✦ &nbsp; ✦ &nbsp; ✦</span>
+    </div>
+    <div class="header-kicker">Annual Bulletin &nbsp;·&nbsp; 2026 Edition</div>
+    <h1>AI <span>in</span> Libraries</h1>
+    <div class="header-sub">Conference &amp; Events Tracker</div>
+    <div class="header-meta">
+      <span class="meta-cell">Analyzed Apr 21, 2026</span>
+      <span class="meta-cell">14 sources monitored</span>
+      <span class="meta-cell">5 active events</span>
+    </div>
+    <hr class="header-bot-rule">
+  </header>
 
-<div class="section-label">Upcoming Deadlines</div>
+  <!-- ══════ I. UPCOMING DEADLINES ══════ -->
+  <div class="section-header">
+    <span class="sec-num">I.</span>
+    <span class="sec-title">Upcoming Deadlines</span>
+    <span class="sec-rule"></span>
+  </div>
 
-<div class="event urgent">
-  <div class="date-col">
-    <div class="date-main">May 4, 2026</div>
-    <div class="date-days days-urgent">13 days</div>
-  </div>
-  <div class="info-col">
-    <div class="conf-name"><span class="badge b-deadline">Deadline</span><a href="https://speakers.infotoday.com/il-speakers/" target="_blank">Internet Librarian Connect</a></div>
-    <div class="event-label">Call for Speakers — "Orchestrating Intelligent Libraries: Technology &amp; Human-Centric AI"</div>
-  </div>
-</div>
-
-<div class="event future">
-  <div class="date-col">
-    <div class="date-main">Dec 3, 2026</div>
-    <div class="date-days days-future">226 days</div>
-  </div>
-  <div class="info-col">
-    <div class="conf-name"><span class="badge b-recording">Recording</span><a href="https://www.amigos.org/services/online-conference/practical-paths-to-the-ai-enhanced-library" target="_blank">Amigos: AI-Enhanced Library</a></div>
-    <div class="event-label">Recording registration closes — live event already occurred</div>
-  </div>
-</div>
-
-<div class="section-label">Upcoming Conferences</div>
-
-<div class="event soon">
-  <div class="date-col">
-    <div class="date-main">May 12–14, 2026</div>
-    <div class="date-days days-soon">21 days</div>
-  </div>
-  <div class="info-col">
-    <div class="conf-name"><span class="badge b-conference">Conference</span><a href="https://alianational.alia.org.au/program/" target="_blank">ALIA National 2026</a></div>
-    <div class="event-label">3-day in-person conference — full program published</div>
-  </div>
-</div>
-
-<div class="event future">
-  <div class="date-col">
-    <div class="date-main">Sep 16–17, 2026</div>
-    <div class="date-days days-future">148 days</div>
-  </div>
-  <div class="info-col">
-    <div class="conf-name"><span class="badge b-conference">Conference</span><a href="https://ai4lam.org/fantastic-futures/fantastic-futures-2026-trust-in-the-loop/" target="_blank">Fantastic Futures 2026</a></div>
-    <div class="event-label">FF2026: Trust in the Loop — in-person &amp; hybrid, Washington DC area</div>
-    <div class="timeline">
-      <div class="tl-item tl-past"><span class="tl-date">Feb 9</span><span class="tl-desc">Call for proposals opened</span></div>
-      <div class="tl-item tl-past"><span class="tl-date">Mar 6</span><span class="tl-desc">Submission portal opened</span></div>
-      <div class="tl-item tl-past"><span class="tl-date">Apr 16</span><span class="tl-desc">Proposals due</span></div>
-      <div class="tl-item tl-upcoming"><span class="tl-date">Jun 1</span><span class="tl-desc">Decisions &amp; notifications to authors</span></div>
-      <div class="tl-item tl-upcoming"><span class="tl-date">Jul 6</span><span class="tl-desc">Conference schedule released</span></div>
-      <div class="tl-item tl-upcoming"><span class="tl-date">Sep 14</span><span class="tl-desc">Affiliate meetings &amp; tours</span></div>
-      <div class="tl-item tl-upcoming"><span class="tl-date">Sep 15</span><span class="tl-desc">AI4LAM Member Day + Workshops</span></div>
-      <div class="tl-item tl-main tl-upcoming"><span class="tl-date">Sep 16–17</span><span class="tl-desc">Main conference — Trust in the Loop</span></div>
-      <div class="tl-item tl-upcoming"><span class="tl-date">Sep 18</span><span class="tl-desc">Closing affiliate events &amp; tours</span></div>
+  <div class="event urgent" style="animation-delay:.08s">
+    <div class="date-col">
+      <div class="date-main">May 4,<br>2026</div>
+      <div class="date-days days-urgent">13 days</div>
+    </div>
+    <div class="info-col">
+      <div class="ev-type t-deadline">Call for Speakers</div>
+      <div class="conf-name"><a href="https://speakers.infotoday.com/il-speakers/" target="_blank">Internet Librarian Connect</a></div>
+      <div class="ev-desc">"Orchestrating Intelligent Libraries: Technology &amp; Human-Centric AI"</div>
     </div>
   </div>
-</div>
 
-<div class="section-label">No 2026 Dates Found</div>
-<div class="no-data-grid">
-  <span class="no-data-tag"><a href="https://www.charleston-hub.com/the-charleston-conference/call-for-papers/" target="_blank">Charleston Conference CFP</a></span>
-  <span class="no-data-tag"><a href="https://www.ai4libraries.org/2025-schedule" target="_blank">ai4Libraries</a></span>
-  <span class="no-data-tag"><a href="https://www.library20.com/page/conferences" target="_blank">Library 2.0 Conferences</a></span>
-  <span class="no-data-tag"><a href="https://www.eventbrite.com/e/ai-and-academic-libraries-an-online-conference-tickets-1123272140209" target="_blank">AI &amp; Academic Libraries</a></span>
-  <span class="no-data-tag"><a href="https://carl-acrl.wildapricot.org/carl-2026-schedule" target="_blank">CARL 2026</a></span>
-  <span class="no-data-tag"><a href="https://www.nwmissouri.edu/library/brickandclick/index.htm" target="_blank">Brick &amp; Click</a></span>
-</div>
-
-<div class="section-label">Filtered Out — Not Real Event Dates</div>
-
-<div class="event noise">
-  <div class="date-col"><div class="date-main">Feb 24</div><div class="date-days days-past">past</div></div>
-  <div class="info-col">
-    <div class="conf-name"><span class="badge b-noise">Page metadata</span>GAIL Schedule (SHSU)</div>
-    <div class="event-label">"Last Updated: Feb 24, 2026" — LibGuide page update timestamp, not a conference date</div>
+  <div class="event future" style="animation-delay:.14s">
+    <div class="date-col">
+      <div class="date-main">Dec 3,<br>2026</div>
+      <div class="date-days days-future">226 days</div>
+    </div>
+    <div class="info-col">
+      <div class="ev-type t-recording">Recording</div>
+      <div class="conf-name"><a href="https://www.amigos.org/services/online-conference/practical-paths-to-the-ai-enhanced-library" target="_blank">Amigos: AI-Enhanced Library</a></div>
+      <div class="ev-desc">Recording registration closes — live event already occurred</div>
+    </div>
   </div>
-</div>
 
-<div class="event noise">
-  <div class="date-col"><div class="date-main">Feb 26</div><div class="date-days days-past">past</div></div>
-  <div class="info-col">
-    <div class="conf-name"><span class="badge b-noise">Post date</span>Library 2.0 Perspectives on AI</div>
-    <div class="event-label">Recording post date — conference already occurred, recordings published Feb 26</div>
+  <!-- ══════ II. UPCOMING CONFERENCES ══════ -->
+  <div class="section-header">
+    <span class="sec-num">II.</span>
+    <span class="sec-title">Upcoming Conferences</span>
+    <span class="sec-rule"></span>
   </div>
-</div>
 
-<div class="event noise">
-  <div class="date-col"><div class="date-main">Apr 14</div><div class="date-days days-past">past</div></div>
-  <div class="info-col">
-    <div class="conf-name"><span class="badge b-noise">Page metadata</span>SAIL — Libraries and AI</div>
-    <div class="event-label">"Last Updated: Apr 14, 2026" — LibGuide page update timestamp. Actual SAIL conference was Oct 2024</div>
+  <div class="event soon" style="animation-delay:.2s">
+    <div class="date-col">
+      <div class="date-main">May 12–14,<br>2026</div>
+      <div class="date-days days-soon">21 days</div>
+    </div>
+    <div class="info-col">
+      <div class="ev-type t-conference">Conference &nbsp;·&nbsp; In-Person</div>
+      <div class="conf-name"><a href="https://alianational.alia.org.au/program/" target="_blank">ALIA National 2026</a></div>
+      <div class="ev-desc">3-day in-person conference — full program published</div>
+    </div>
   </div>
-</div>
 
-<div class="event noise">
-  <div class="date-col"><div class="date-main">Jan 23</div><div class="date-days days-past">past</div></div>
-  <div class="info-col">
-    <div class="conf-name"><span class="badge b-noise">Article date</span>Lehigh AI Summit</div>
-    <div class="event-label">News article published Jan 23 about the summit that happened Jan 13 — both past</div>
+  <div class="event future" style="animation-delay:.26s">
+    <div class="date-col">
+      <div class="date-main">Sep 16–17,<br>2026</div>
+      <div class="date-days days-future">148 days</div>
+    </div>
+    <div class="info-col">
+      <div class="ev-type t-conference">Conference &nbsp;·&nbsp; Hybrid</div>
+      <div class="conf-name"><a href="https://ai4lam.org/fantastic-futures/fantastic-futures-2026-trust-in-the-loop/" target="_blank">Fantastic Futures 2026</a></div>
+      <div class="ev-desc">FF2026: Trust in the Loop — Washington DC area</div>
+      <div class="timeline">
+        <div class="tl-item tl-past">
+          <span class="tl-date">Feb 9</span>
+          <span class="tl-desc">Call for proposals opened</span>
+        </div>
+        <div class="tl-item tl-past">
+          <span class="tl-date">Mar 6</span>
+          <span class="tl-desc">Submission portal opened</span>
+        </div>
+        <div class="tl-item tl-past">
+          <span class="tl-date">Apr 16</span>
+          <span class="tl-desc">Proposals due</span>
+        </div>
+        <div class="tl-item tl-upcoming">
+          <span class="tl-date">Jun 1</span>
+          <span class="tl-desc">Decisions &amp; notifications to authors</span>
+        </div>
+        <div class="tl-item tl-upcoming">
+          <span class="tl-date">Jul 6</span>
+          <span class="tl-desc">Conference schedule released</span>
+        </div>
+        <div class="tl-item tl-upcoming">
+          <span class="tl-date">Sep 14</span>
+          <span class="tl-desc">Affiliate meetings &amp; tours</span>
+        </div>
+        <div class="tl-item tl-upcoming">
+          <span class="tl-date">Sep 15</span>
+          <span class="tl-desc">AI4LAM Member Day + Workshops</span>
+        </div>
+        <div class="tl-item tl-main tl-upcoming">
+          <span class="tl-date">Sep 16–17</span>
+          <span class="tl-desc">Main conference — Trust in the Loop</span>
+        </div>
+        <div class="tl-item tl-upcoming">
+          <span class="tl-date">Sep 18</span>
+          <span class="tl-desc">Closing affiliate events &amp; tours</span>
+        </div>
+      </div>
+    </div>
   </div>
-</div>
 
+  <!-- ══════ III. NO 2026 DATES ══════ -->
+  <div class="section-header">
+    <span class="sec-num">III.</span>
+    <span class="sec-title">No 2026 Dates Found</span>
+    <span class="sec-rule"></span>
+  </div>
+
+  <div class="no-data-grid">
+    <span class="no-data-tag"><a href="https://www.charleston-hub.com/the-charleston-conference/call-for-papers/" target="_blank">Charleston Conference CFP</a></span>
+    <span class="no-data-tag"><a href="https://www.ai4libraries.org/2025-schedule" target="_blank">ai4Libraries</a></span>
+    <span class="no-data-tag"><a href="https://www.library20.com/page/conferences" target="_blank">Library 2.0 Conferences</a></span>
+    <span class="no-data-tag"><a href="https://www.eventbrite.com/e/ai-and-academic-libraries-an-online-conference-tickets-1123272140209" target="_blank">AI &amp; Academic Libraries</a></span>
+    <span class="no-data-tag"><a href="https://carl-acrl.wildapricot.org/carl-2026-schedule" target="_blank">CARL 2026</a></span>
+    <span class="no-data-tag"><a href="https://www.nwmissouri.edu/library/brickandclick/index.htm" target="_blank">Brick &amp; Click</a></span>
+  </div>
+
+  <!-- ══════ IV. FILTERED ENTRIES ══════ -->
+  <div class="section-header">
+    <span class="sec-num">IV.</span>
+    <span class="sec-title">Filtered — Not Real Event Dates</span>
+    <span class="sec-rule"></span>
+  </div>
+
+  <div class="event noise" style="animation-delay:.32s">
+    <div class="date-col">
+      <div class="date-main">Feb 24</div>
+      <div class="date-days days-past">past</div>
+    </div>
+    <div class="info-col">
+      <div class="ev-type t-noise">Page Metadata</div>
+      <div class="conf-name">GAIL Schedule (SHSU)</div>
+      <div class="ev-desc">"Last Updated: Feb 24, 2026" — LibGuide page update timestamp, not a conference date</div>
+    </div>
+  </div>
+
+  <div class="event noise" style="animation-delay:.36s">
+    <div class="date-col">
+      <div class="date-main">Feb 26</div>
+      <div class="date-days days-past">past</div>
+    </div>
+    <div class="info-col">
+      <div class="ev-type t-noise">Post Date</div>
+      <div class="conf-name">Library 2.0 Perspectives on AI</div>
+      <div class="ev-desc">Recording post date — conference already occurred, recordings published Feb 26</div>
+    </div>
+  </div>
+
+  <div class="event noise" style="animation-delay:.40s">
+    <div class="date-col">
+      <div class="date-main">Apr 14</div>
+      <div class="date-days days-past">past</div>
+    </div>
+    <div class="info-col">
+      <div class="ev-type t-noise">Page Metadata</div>
+      <div class="conf-name">SAIL — Libraries and AI</div>
+      <div class="ev-desc">"Last Updated: Apr 14, 2026" — LibGuide timestamp. Actual SAIL conference was Oct 2024</div>
+    </div>
+  </div>
+
+  <div class="event noise" style="animation-delay:.44s">
+    <div class="date-col">
+      <div class="date-main">Jan 23</div>
+      <div class="date-days days-past">past</div>
+    </div>
+    <div class="info-col">
+      <div class="ev-type t-noise">Article Date</div>
+      <div class="conf-name">Lehigh AI Summit</div>
+      <div class="ev-desc">News article published Jan 23 about the summit that happened Jan 13 — both past</div>
+    </div>
+  </div>
+
+  <footer>
+    <p class="footer-text">AI in Libraries Conference Tracker &nbsp;·&nbsp; Updated April 21, 2026 &nbsp;·&nbsp; 14 Sources Monitored</p>
+  </footer>
+
+</div>
 </body>
 </html>
